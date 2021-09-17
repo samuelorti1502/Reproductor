@@ -1,5 +1,8 @@
 package formularios;
 
+import clases.MusicTags;
+import com.mpatric.mp3agic.InvalidDataException;
+import com.mpatric.mp3agic.UnsupportedTagException;
 import jaco.mp3.player.MP3Player;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -7,7 +10,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javax.swing.*;
@@ -23,17 +29,13 @@ public class FrmMusicPlayer implements ActionListener {
     private JPanel panelLista, panelInfo, panelPlayer;
     private ImageIcon Img;
     private Icon icono;
-    private JLabel play, stop, fwd, prev, aleat, abrir;
+    private JLabel play, stop, fwd, prev, aleat;
+    private JLabel titulo, artista, album, duracion;
     private JMenu menu, smenu;
     private JMenuItem e1, e2;
     private JList lista;
 
     private boolean press = false;
-
-    File songFile[];
-    String currentDirectory = "home.user";
-    String currentPath;
-    String imagePath;
 
     private Media archivo;
     private MediaPlayer repro;
@@ -44,6 +46,7 @@ public class FrmMusicPlayer implements ActionListener {
     private ArrayList arrayRuta = new ArrayList();
     String rutaFormato, rutaNombreMusica;
     DefaultListModel modelo = new DefaultListModel();
+    File songFile;
 
     public FrmMusicPlayer() {
 
@@ -53,7 +56,7 @@ public class FrmMusicPlayer implements ActionListener {
 
     public void Player() {
         player = new JFrame("UMG Music Player 1.0");
-        player.setSize(600, 350);
+        player.setSize(600, 450);
         player.setLayout(null);
         player.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         player.setLocationRelativeTo(null);
@@ -70,7 +73,7 @@ public class FrmMusicPlayer implements ActionListener {
         player.setJMenuBar(menuBar);
         // </editor-fold>
 
-        // <editor-fold defaultstate="collapsed" desc="Panel info">
+        // <editor-fold defaultstate="collapsed" desc="Panel lista">
         panelLista = new JPanel();
         panelLista.setSize(570, 150);
         panelLista.setLocation(5, 0);
@@ -80,10 +83,63 @@ public class FrmMusicPlayer implements ActionListener {
         player.add(panelLista, 0);
         // </editor-fold>
 
+        // <editor-fold defaultstate="collapsed" desc="playlist">
+        lista = new JList();
+        lista.setLocation(10, 10);
+        lista.setSize(panelLista.getWidth() - 20, panelLista.getHeight() - 20);
+        lista.setVisible(true);
+        // </editor-fold>
+
+        // <editor-fold defaultstate="collapsed" desc="Panel info">
+        panelInfo = new JPanel();
+        panelInfo.setSize(570, 120);
+        panelInfo.setLocation(5, panelLista.getHeight() + 5);
+        panelInfo.setLayout(null);
+        panelInfo.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        panelInfo.setVisible(true);
+        player.add(panelInfo, 0);
+        // </editor-fold>
+
+        // <editor-fold defaultstate="collapsed" desc="Titulo">
+        titulo = new JLabel();
+        titulo.setSize(panelInfo.getWidth(), panelInfo.getHeight() / 4);
+        titulo.setLocation(0, 0);
+        titulo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+        titulo.setVisible(true);
+        // </editor-fold>
+
+        // <editor-fold defaultstate="collapsed" desc="Artista">
+        artista = new JLabel();
+        artista.setSize(panelInfo.getWidth(), panelInfo.getHeight() / 4);
+        artista.setLocation(0, 30);
+        artista.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+        artista.setVisible(true);
+        // </editor-fold>
+
+        // <editor-fold defaultstate="collapsed" desc="Album">
+        album = new JLabel();
+        album.setSize(panelInfo.getWidth(), panelInfo.getHeight() / 4);
+        album.setLocation(0, 60);
+        album.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+        album.setVisible(true);
+        // </editor-fold>
+        
+        // <editor-fold defaultstate="collapsed" desc="Album">
+        duracion = new JLabel();
+        duracion.setSize(panelInfo.getWidth(), panelInfo.getHeight() / 4);
+        duracion.setLocation(0, 90);
+        duracion.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+        duracion.setVisible(true);
+        // </editor-fold>
+
         // <editor-fold defaultstate="collapsed" desc="Panel Reproductor"> 
         panelPlayer = new JPanel();
         panelPlayer.setSize(player.getWidth(), 100);
-        panelPlayer.setLocation(0, 180);
+        panelPlayer.setLocation(0, 280);
         panelPlayer.setLayout(null);
         panelPlayer.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         panelPlayer.setVisible(true);
@@ -126,7 +182,7 @@ public class FrmMusicPlayer implements ActionListener {
         prev.setIcon(icono);
         prev.setVisible(true);
         // </editor-fold>
-        
+
         // <editor-fold defaultstate="collapsed" desc="Boton aleatorio">
         aleat = new JLabel();
         aleat.setSize((panelPlayer.getWidth() / 10), 70);
@@ -139,14 +195,11 @@ public class FrmMusicPlayer implements ActionListener {
         aleat.setVisible(true);
         // </editor-fold>
 
-        // <editor-fold defaultstate="collapsed" desc="playlist">
-        lista = new JList();
-        lista.setLocation(10, 10);
-        lista.setSize(panelLista.getWidth() - 20, panelLista.getHeight() - 20);
-        lista.setVisible(true);
-        // </editor-fold>
-        
         panelLista.add(lista, 0);
+        panelInfo.add(titulo, 0);
+        panelInfo.add(artista, 0);
+        panelInfo.add(album, 0);
+        panelInfo.add(duracion, 0);        
         panelPlayer.add(play, 0);
         panelPlayer.add(prev, 0);
         panelPlayer.add(fwd, 0);
@@ -201,6 +254,7 @@ public class FrmMusicPlayer implements ActionListener {
                             repro.play();
                         } else {
                             play(indice);
+                            musicTags(indice);
                         }
                         setPress(true);
                     } else {
@@ -233,6 +287,8 @@ public class FrmMusicPlayer implements ActionListener {
 
                         if (indiceAuxNext < arrayFormato.size()) {
                             next(indiceAuxNext);
+                            System.out.println(indiceAuxNext);
+                            musicTags(indiceAuxNext);
                             contAuxNext++;
                         } else {
                             contAuxNext = 0;
@@ -257,7 +313,7 @@ public class FrmMusicPlayer implements ActionListener {
 
                         if (indiceAuxPrev >= 0) {
                             prev(indiceAuxPrev);
-
+                            musicTags(indiceAuxPrev);
                         } else {
                             indice = arrayFormato.size() - 1;
                         }
@@ -277,7 +333,25 @@ public class FrmMusicPlayer implements ActionListener {
 
         archivo = new Media(rutaFormato);
         repro = new MediaPlayer(archivo);
+
         repro.play();
+    }
+
+    public void musicTags(int index) {
+        MusicTags tags;
+        try {
+            tags = new MusicTags((String) arrayRuta.get(index));
+            artista.setText(tags.getArtist());
+            titulo.setText(tags.getTitle());
+            album.setText(tags.getAlbum());
+            duracion.setText(String.valueOf(tags.getSeconds()));
+        } catch (IOException ex) {
+            Logger.getLogger(FrmMusicPlayer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedTagException ex) {
+            Logger.getLogger(FrmMusicPlayer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidDataException ex) {
+            Logger.getLogger(FrmMusicPlayer.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void next(int indiceAux) {

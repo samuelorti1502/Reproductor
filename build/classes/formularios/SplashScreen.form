@@ -41,9 +41,12 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
-                  <Component id="progressBar" min="-2" pref="531" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="progressBar" pref="531" max="32767" attributes="0"/>
+                      <Component id="jLabel1" max="32767" attributes="0"/>
+                  </Group>
                   <EmptySpace pref="42" max="32767" attributes="0"/>
               </Group>
           </Group>
@@ -53,13 +56,21 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" pref="134" max="-2" attributes="0"/>
                   <Component id="progressBar" min="-2" pref="24" max="-2" attributes="0"/>
-                  <EmptySpace pref="142" max="32767" attributes="0"/>
+                  <EmptySpace min="-2" pref="59" max="-2" attributes="0"/>
+                  <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace pref="62" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
       </Layout>
       <SubComponents>
         <Component class="javax.swing.JProgressBar" name="progressBar">
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel1">
+          <Properties>
+            <Property name="horizontalAlignment" type="int" value="0"/>
+            <Property name="text" type="java.lang.String" value="jLabel1"/>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>
