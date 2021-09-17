@@ -49,9 +49,13 @@ public class SplashScreen extends javax.swing.JFrame implements Runnable {
 
         panelSplash = new javax.swing.JPanel();
         progressBar = new javax.swing.JProgressBar();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setUndecorated(true);
+
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("jLabel1");
 
         javax.swing.GroupLayout panelSplashLayout = new javax.swing.GroupLayout(panelSplash);
         panelSplash.setLayout(panelSplashLayout);
@@ -59,7 +63,9 @@ public class SplashScreen extends javax.swing.JFrame implements Runnable {
             panelSplashLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelSplashLayout.createSequentialGroup()
                 .addGap(27, 27, 27)
-                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 531, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(panelSplashLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(42, Short.MAX_VALUE))
         );
         panelSplashLayout.setVerticalGroup(
@@ -67,7 +73,9 @@ public class SplashScreen extends javax.swing.JFrame implements Runnable {
             .addGroup(panelSplashLayout.createSequentialGroup()
                 .addGap(134, 134, 134)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(142, Short.MAX_VALUE))
+                .addGap(59, 59, 59)
+                .addComponent(jLabel1)
+                .addContainerGap(62, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -145,6 +153,7 @@ public class SplashScreen extends javax.swing.JFrame implements Runnable {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel panelSplash;
     private javax.swing.JProgressBar progressBar;
     // End of variables declaration//GEN-END:variables
