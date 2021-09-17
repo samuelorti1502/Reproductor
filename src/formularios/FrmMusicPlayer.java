@@ -11,6 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import static java.lang.Thread.sleep;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,7 +24,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  *
  * @author Samuel David Ortiz
  */
-public class FrmMusicPlayer implements ActionListener {
+public class FrmMusicPlayer implements ActionListener, Runnable {
 
     private JFrame player;
     private JPanel panelLista, panelInfo, panelPlayer;
@@ -34,19 +35,22 @@ public class FrmMusicPlayer implements ActionListener {
     private JMenu menu, smenu;
     private JMenuItem e1, e2;
     private JList lista;
+    private JProgressBar barra;
 
-    private boolean press = false;
+    private boolean press = false, estado;
 
     private Media archivo;
     private MediaPlayer repro;
     private JFileChooser openFile;
-    int seleccion, cont = 0, contAuxNext = 1, indice = 0, indiceAuxNext, indiceAuxPrev;
+    int seleccion, cont = 0, contAuxNext = 1, indice = 0, indiceAuxNext, indiceAuxPrev, miliseg, seg, min, hora, minuto, segundo;;
     private ArrayList arrayFormato = new ArrayList();
     private ArrayList arrayNombreMusica = new ArrayList();
     private ArrayList arrayRuta = new ArrayList();
     String rutaFormato, rutaNombreMusica;
     DefaultListModel modelo = new DefaultListModel();
     File songFile;
+    Thread hilo;
+    
 
     public FrmMusicPlayer() {
 
@@ -126,17 +130,24 @@ public class FrmMusicPlayer implements ActionListener {
 
         album.setVisible(true);
         // </editor-fold>
+
+        // <editor-fold defaultstate="collapsed" desc="Barra duracion">
+        barra = new JProgressBar();
+        barra.setSize(panelInfo.getWidth() - 60, panelInfo.getHeight() / 4);
+        barra.setLocation(5, 90);
+        barra.setVisible(true);
+        // </editor-fold>
         
-        // <editor-fold defaultstate="collapsed" desc="Album">
+        // <editor-fold defaultstate="collapsed" desc="Duracion">
         duracion = new JLabel();
-        duracion.setSize(panelInfo.getWidth(), panelInfo.getHeight() / 4);
-        duracion.setLocation(0, 90);
+        duracion.setSize(60, panelInfo.getHeight() / 4);
+        duracion.setLocation(barra.getWidth(), 90);
         duracion.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
         duracion.setVisible(true);
         // </editor-fold>
 
-        // <editor-fold defaultstate="collapsed" desc="Panel Reproductor"> 
+        // <editor-fold defaultstate="collapsed" desc="Panel Reproductor">
         panelPlayer = new JPanel();
         panelPlayer.setSize(player.getWidth(), 100);
         panelPlayer.setLocation(0, 280);
@@ -199,7 +210,8 @@ public class FrmMusicPlayer implements ActionListener {
         panelInfo.add(titulo, 0);
         panelInfo.add(artista, 0);
         panelInfo.add(album, 0);
-        panelInfo.add(duracion, 0);        
+        panelInfo.add(duracion, 0);
+        panelInfo.add(barra, 0);
         panelPlayer.add(play, 0);
         panelPlayer.add(prev, 0);
         panelPlayer.add(fwd, 0);
@@ -252,6 +264,7 @@ public class FrmMusicPlayer implements ActionListener {
                         indice = lista.getSelectedIndex();
                         if (repro != null) {
                             repro.play();
+                            hilo.start();
                         } else {
                             play(indice);
                             musicTags(indice);
@@ -261,6 +274,7 @@ public class FrmMusicPlayer implements ActionListener {
                         Img = new ImageIcon("./src/images/play.png");
                         if (repro != null) {
                             repro.pause();
+                            hilo.stop();
                         }
                         setPress(false);
                     }
@@ -335,6 +349,7 @@ public class FrmMusicPlayer implements ActionListener {
         repro = new MediaPlayer(archivo);
 
         repro.play();
+        tempo();
     }
 
     public void musicTags(int index) {
@@ -344,7 +359,12 @@ public class FrmMusicPlayer implements ActionListener {
             artista.setText(tags.getArtist());
             titulo.setText(tags.getTitle());
             album.setText(tags.getAlbum());
-            duracion.setText(String.valueOf(tags.getSeconds()));
+            duracion.setText(hhmmss(tags.getSeconds()));
+            
+            /*for (int i = 0; i < tags.getSeconds(); i++) {
+                //Thread.sleep(1000);
+                barra.setValue(i);
+            }*/
         } catch (IOException ex) {
             Logger.getLogger(FrmMusicPlayer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (UnsupportedTagException ex) {
@@ -352,6 +372,18 @@ public class FrmMusicPlayer implements ActionListener {
         } catch (InvalidDataException ex) {
             Logger.getLogger(FrmMusicPlayer.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public String hhmmss(int segundos) {
+        int secondsLeft = segundos % 3600 % 60;
+        int minutes = (int) Math.floor(segundos % 3600 / 60);
+        int hours = (int) Math.floor(segundos / 3600);
+
+        String HH = ((hours < 10) ? "0" : "") + hours;
+        String MM = ((minutes < 10) ? "0" : "") + minutes;
+        String SS = ((secondsLeft < 10) ? "0" : "") + secondsLeft;
+
+        return HH + ":" + MM + ":" + SS;
     }
 
     public void next(int indiceAux) {
@@ -375,6 +407,43 @@ public class FrmMusicPlayer implements ActionListener {
         repro = new MediaPlayer(archivo);
         repro.play();
     }
+    
+    public void tempo(){
+        estado = true;
+        
+        hilo = new Thread(){
+          public void run()  {
+              for(;;){
+                  if(estado == true){
+                      try{
+                          sleep(1);
+                          if(miliseg >= 1000){
+                              miliseg = 0;
+                              seg++;
+                          }
+                          if(seg >= 60){
+                              miliseg = 0;
+                              seg = 0;
+                              min++;
+                          }
+                          if(min >= 60){
+                              miliseg = 0;
+                              seg = 0;
+                              min = 0;
+                          }
+                          duracion.setText(((min<=9)?"0"+min:min)+":"+(seg<=9?"0"+seg:seg));
+                          miliseg++;
+                      }catch(Exception e) {
+                          
+                      }
+                  }else{
+                     break; 
+                  }
+              }
+          }
+        };
+        hilo.start();
+    }
 
     public boolean isPress() {
         return press;
@@ -387,6 +456,21 @@ public class FrmMusicPlayer implements ActionListener {
     private MP3Player mp3Player() {
         MP3Player mp3Player = new MP3Player();
         return mp3Player;
+    }
+
+    @Override
+    public void run() {
+        try {
+            for (int i = 0; i<=100;i++){
+
+                Thread.sleep(5);
+
+                barra.setValue(i);
+            }
+            new FrmMusicPlayer();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SplashScreen.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
 }
