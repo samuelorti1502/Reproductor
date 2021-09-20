@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import static java.lang.Thread.sleep;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.scene.media.Media;
@@ -42,7 +43,8 @@ public class FrmMusicPlayer implements ActionListener, Runnable {
     private Media archivo;
     private MediaPlayer repro;
     private JFileChooser openFile;
-    int seleccion, cont = 0, contAuxNext = 1, indice = 0, indiceAuxNext, indiceAuxPrev, miliseg, seg, min, hora, minuto, segundo;;
+    int seleccion, cont = 0, contAuxNext = 1, indice = 0, indiceAuxNext, indiceAuxPrev, miliseg, seg, min, hora, minuto, segundo;
+    ;
     private ArrayList arrayFormato = new ArrayList();
     private ArrayList arrayNombreMusica = new ArrayList();
     private ArrayList arrayRuta = new ArrayList();
@@ -50,7 +52,6 @@ public class FrmMusicPlayer implements ActionListener, Runnable {
     DefaultListModel modelo = new DefaultListModel();
     File songFile;
     Thread hilo;
-    
 
     public FrmMusicPlayer() {
 
@@ -137,7 +138,7 @@ public class FrmMusicPlayer implements ActionListener, Runnable {
         barra.setLocation(5, 90);
         barra.setVisible(true);
         // </editor-fold>
-        
+
         // <editor-fold defaultstate="collapsed" desc="Duracion">
         duracion = new JLabel();
         duracion.setSize(60, panelInfo.getHeight() / 4);
@@ -264,7 +265,7 @@ public class FrmMusicPlayer implements ActionListener, Runnable {
                         indice = lista.getSelectedIndex();
                         if (repro != null) {
                             repro.play();
-                            hilo.start();
+                            //hilo.start();
                         } else {
                             play(indice);
                             musicTags(indice);
@@ -274,7 +275,7 @@ public class FrmMusicPlayer implements ActionListener, Runnable {
                         Img = new ImageIcon("./src/images/play.png");
                         if (repro != null) {
                             repro.pause();
-                            hilo.stop();
+                            //hilo.stop();
                         }
                         setPress(false);
                     }
@@ -336,6 +337,28 @@ public class FrmMusicPlayer implements ActionListener, Runnable {
                 }
             }
         });
+
+        aleat.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                if (arrayFormato.size() == 0) {
+                    JOptionPane.showMessageDialog(null, "No hay musica para reproducir");
+                } else {
+                    if (repro == null) {
+                        JOptionPane.showMessageDialog(null, "No hay musica reproduciondose");
+                    } else {
+                        aleatorio();
+                    }
+                }
+            }
+        });
+        
+        lista.addMouseListener(new MouseAdapter(){
+            public void mousePressed(MouseEvent e) {
+                if(SwingUtilities.isRightMouseButton(e)){
+                    eliminar();
+                }
+            }
+        });
     }
 
     public void play(int indice) {
@@ -360,7 +383,7 @@ public class FrmMusicPlayer implements ActionListener, Runnable {
             titulo.setText(tags.getTitle());
             album.setText(tags.getAlbum());
             duracion.setText(hhmmss(tags.getSeconds()));
-            
+
             /*for (int i = 0; i < tags.getSeconds(); i++) {
                 //Thread.sleep(1000);
                 barra.setValue(i);
@@ -390,6 +413,7 @@ public class FrmMusicPlayer implements ActionListener, Runnable {
         com.sun.javafx.application.PlatformImpl.startup(() -> {
         });
 
+        System.out.println("");
         rutaFormato = (String) arrayFormato.get(indiceAux).toString();
         rutaNombreMusica = (String) arrayNombreMusica.get(indiceAux).toString();
         archivo = new Media(rutaFormato);
@@ -407,40 +431,59 @@ public class FrmMusicPlayer implements ActionListener, Runnable {
         repro = new MediaPlayer(archivo);
         repro.play();
     }
-    
-    public void tempo(){
+
+    public void aleatorio() {
+        Random r = new Random();
+        int i = arrayFormato.size();
+        int valorDado = r.nextInt(i);
+
+        repro.stop();
+        musicTags(valorDado);
+        play(valorDado);
+
+    }
+
+    public void eliminar() {
+        if (!lista.isSelectionEmpty()) {
+            modelo.removeElementAt(lista.getSelectedIndex());
+            lista.setModel(modelo);
+        }
+
+    }
+
+    public void tempo() {
         estado = true;
-        
-        hilo = new Thread(){
-          public void run()  {
-              for(;;){
-                  if(estado == true){
-                      try{
-                          sleep(1);
-                          if(miliseg >= 1000){
-                              miliseg = 0;
-                              seg++;
-                          }
-                          if(seg >= 60){
-                              miliseg = 0;
-                              seg = 0;
-                              min++;
-                          }
-                          if(min >= 60){
-                              miliseg = 0;
-                              seg = 0;
-                              min = 0;
-                          }
-                          duracion.setText(((min<=9)?"0"+min:min)+":"+(seg<=9?"0"+seg:seg));
-                          miliseg++;
-                      }catch(Exception e) {
-                          
-                      }
-                  }else{
-                     break; 
-                  }
-              }
-          }
+
+        hilo = new Thread() {
+            public void run() {
+                for (;;) {
+                    if (estado == true) {
+                        try {
+                            sleep(1);
+                            if (miliseg >= 1000) {
+                                miliseg = 0;
+                                seg++;
+                            }
+                            if (seg >= 60) {
+                                miliseg = 0;
+                                seg = 0;
+                                min++;
+                            }
+                            if (min >= 60) {
+                                miliseg = 0;
+                                seg = 0;
+                                min = 0;
+                            }
+                            duracion.setText(((min <= 9) ? "0" + min : min) + ":" + (seg <= 9 ? "0" + seg : seg));
+                            miliseg++;
+                        } catch (Exception e) {
+
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
         };
         hilo.start();
     }
@@ -461,7 +504,7 @@ public class FrmMusicPlayer implements ActionListener, Runnable {
     @Override
     public void run() {
         try {
-            for (int i = 0; i<=100;i++){
+            for (int i = 0; i <= 100; i++) {
 
                 Thread.sleep(5);
 
